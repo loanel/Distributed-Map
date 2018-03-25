@@ -1,4 +1,4 @@
-package com.company;
+package mat.distmap;
 
 public interface SimpleStringMap {
     boolean containsKey(String key);

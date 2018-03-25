@@ -1,4 +1,4 @@
-package com.company;
+package mat.distmap;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.*;
