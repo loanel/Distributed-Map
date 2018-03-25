@@ -8,14 +8,15 @@ import org.jgroups.View;
 import java.util.List;
 
 public class ViewHandler extends Thread {
-    JChannel ch;
-    MergeView view;
+    private JChannel ch;
+    private MergeView view;
 
     ViewHandler(JChannel ch, MergeView view) {
         this.ch = ch;
         this.view = view;
     }
 
+    /// api tutorial function for ViewHandler
     public void run() {
         List<View> subgroups = view.getSubgroups();
         View tmp_view = subgroups.get(0);
@@ -24,7 +25,7 @@ public class ViewHandler extends Thread {
             System.out.println("Not member of the new primary partition ("
                     + tmp_view + "), will re-acquire the state");
             try {
-                ch.getState(null, 30000);
+                ch.getState(null, 0);
             } catch (Exception ignored) {
             }
         } else {

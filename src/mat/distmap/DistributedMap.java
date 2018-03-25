@@ -93,11 +93,10 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringMap {
         dataset.putAll(newData);
     }
 
-    /// doesn't work on windows 8.1, looks like no MergeView's are being sent after a disconnect
     @Override
     public void viewAccepted(View new_view) {
         if (new_view instanceof MergeView) {
-            System.out.println("Accepting mergeview");
+            System.out.println("handling MergeView");
             ViewHandler viewHandler = new ViewHandler(channel, (MergeView) new_view);
             viewHandler.start();
         }

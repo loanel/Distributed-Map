@@ -2,10 +2,7 @@ package mat.distmap;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.*;
-import org.jgroups.protocols.pbcast.GMS;
-import org.jgroups.protocols.pbcast.NAKACK2;
-import org.jgroups.protocols.pbcast.STABLE;
-import org.jgroups.protocols.pbcast.STATE_TRANSFER;
+import org.jgroups.protocols.pbcast.*;
 import org.jgroups.stack.ProtocolStack;
 
 import java.net.InetAddress;
@@ -14,9 +11,10 @@ import java.util.Scanner;
 public class Runner {
 
     public static void main(String[] args) throws Exception {
-        new UDP().setValue("mcast_group_addr", InetAddress.getByName("230.0.0.1"));
-        JChannel channel = initializeChannel();
+        System.setProperty("java.net.preferIPv4Stack", "true");
         String clusterName = "mateusz-home";
+        String udpIp = "\"230.0.0.2\"";
+        JChannel channel = initializeChannel(udpIp);
         DistributedMap mapInstance = new DistributedMap(channel, clusterName);
         clientRoutine(mapInstance);
     }
@@ -35,7 +33,11 @@ public class Runner {
         String command = message[0];
         switch (command) {
             case "put":
-                map.put(message[1], message[2]);
+                if (message.length == 3) {
+                    map.put(message[1], message[2]);
+                } else {
+                    System.out.println("Wrong amount of arguments, required format for put: put [key] [value]");
+                }
                 break;
             case "remove":
                 map.remove(message[1]);
@@ -51,11 +53,11 @@ public class Runner {
         }
     }
 
-    private static JChannel initializeChannel() throws Exception {
+    private static JChannel initializeChannel(String udpIp) throws Exception {
         JChannel channel = new JChannel(false);
         ProtocolStack stack = new ProtocolStack();
         channel.setProtocolStack(stack);
-        stack.addProtocol(new UDP())
+        stack.addProtocol(new UDP().setValue("mcast_group_addr", InetAddress.getByName(udpIp)))
                 .addProtocol(new PING())
                 .addProtocol(new MERGE3())
                 .addProtocol(new FD_SOCK())
@@ -71,7 +73,10 @@ public class Runner {
                 .addProtocol(new UFC())
                 .addProtocol(new MFC())
                 .addProtocol(new FRAG2())
-                .addProtocol(new STATE_TRANSFER());
+                .addProtocol(new STATE_TRANSFER())
+                .addProtocol(new SEQUENCER());
+//        causes unexpected looping with SEQUENCER up and dropping FORWARD requests warnings
+//                .addProtocol(new FLUSH());
         stack.init();
         return channel;
     }
